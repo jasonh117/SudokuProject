@@ -2,6 +2,7 @@ package main;
 import java.util.ArrayList;
 
 import cspSolver.BTSolver;
+import cspSolver.BTSolver.Preprocessing;
 import cspSolver.BTSolver.ConsistencyCheck;
 import cspSolver.BTSolver.ValueSelectionHeuristic;
 import cspSolver.BTSolver.VariableSelectionHeuristic;
@@ -18,11 +19,9 @@ public class SudokuSolverMain {
 		BTSolver solver = new BTSolver(sf, Integer.parseInt(args[2]));
 		ArrayList<String> tokens = getTokens(args);
 		
-		solver.setConsistencyChecks(ConsistencyCheck.None);
-		solver.setValueSelectionHeuristic(ValueSelectionHeuristic.None);
-		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.None);
+		if (tokens.contains("ACP")) solver.setACPreprocessing(Preprocessing.ACPreprocessing);
 		if (tokens.contains("FC")) solver.setConsistencyChecks(ConsistencyCheck.ForwardChecking);
-		
+		if (tokens.contains("MAC")) solver.setConsistencyChecks(ConsistencyCheck.ArcConsistency);
 		
 		Thread t1 = new Thread(solver);
 		try

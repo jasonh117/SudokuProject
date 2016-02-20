@@ -1,7 +1,9 @@
 package cspSolver;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import sudoku.Converter;
 import sudoku.SudokuFile;
@@ -32,10 +34,12 @@ public class BTSolver implements Runnable{
 	public enum VariableSelectionHeuristic 	{ None, MinimumRemainingValue, Degree };
 	public enum ValueSelectionHeuristic 		{ None, LeastConstrainingValue };
 	public enum ConsistencyCheck				{ None, ForwardChecking, ArcConsistency };
+	public enum Preprocessing				{ None, ACPreprocessing };
 	
 	private VariableSelectionHeuristic varHeuristics;
 	private ValueSelectionHeuristic valHeuristics;
 	private ConsistencyCheck cChecks;
+	private Preprocessing Preprocess;
 	//===============================================================================
 	// Constructors
 	//===============================================================================
@@ -47,6 +51,10 @@ public class BTSolver implements Runnable{
 		this.timelimit = timelimit;
 		numAssignments = 0;
 		numBacktracks = 0;
+		Preprocess = Preprocessing.None;
+		cChecks = ConsistencyCheck.None;
+		valHeuristics = ValueSelectionHeuristic.None;
+		varHeuristics = VariableSelectionHeuristic.None;
 	}
 
 	//===============================================================================
@@ -66,6 +74,11 @@ public class BTSolver implements Runnable{
 	public void setConsistencyChecks(ConsistencyCheck cc)
 	{
 		this.cChecks = cc;
+	}
+	
+	public void setACPreprocessing(Preprocessing cc)
+	{
+		this.Preprocess = cc;
 	}
 	//===============================================================================
 	// Accessors
@@ -160,7 +173,7 @@ public class BTSolver implements Runnable{
 		break;
 		case ForwardChecking: 	isConsistent = forwardChecking(v);
 		break;
-		case ArcConsistency: 	isConsistent = arcConsistency();
+		case ArcConsistency: 	isConsistent = arcConsistency(v);
 		break;
 		default: 				isConsistent = assignmentsCheck();
 		break;
@@ -192,11 +205,11 @@ public class BTSolver implements Runnable{
 	
 	private boolean forwardChecking(Variable v)
 	{
-		if(!assignmentsCheck())
-			return false;
 		for(Variable vOther : network.getNeighborsOfVariable(v))
 		{
 			vOther.removeValueFromDomain(v.getAssignment());
+			if (vOther.getDomain().isEmpty())
+				return false;
 		}
 		return true;
 	}
@@ -204,9 +217,38 @@ public class BTSolver implements Runnable{
 	/**
 	 * TODO: Implement Maintaining Arc Consistency.
 	 */
-	private boolean arcConsistency()
+	private boolean arcConsistency(Variable v)
 	{
-		return false;
+		Queue<Variable> acq = new LinkedList<Variable>();
+		acq.add(v);
+		
+		while (!acq.isEmpty())
+		{
+			Variable n = acq.remove();
+			for(Variable vOther : network.getNeighborsOfVariable(n))
+			{
+				vOther.removeValueFromDomain(n.getAssignment());
+				if (vOther.getDomain().isEmpty())
+					return false;
+				if (vOther.isModified() && vOther.isAssigned())
+				{
+					acq.add(vOther);
+					vOther.setModified(false);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private void arcConsistencyPreprocessor()
+	{
+		for(Variable v : network.getVariables())
+		{
+			if(v.isAssigned())
+			{
+				arcConsistency(v);
+			}
+		}
 	}
 	
 	/**
@@ -336,6 +378,8 @@ public class BTSolver implements Runnable{
 	public void solve()
 	{
 		acPreStartTime = System.currentTimeMillis();
+		if (Preprocess == Preprocessing.ACPreprocessing)
+			arcConsistencyPreprocessor();
 		acPreEndTime = System.currentTimeMillis();
 		startTime = System.currentTimeMillis();
 		try {
