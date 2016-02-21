@@ -164,16 +164,16 @@ public class BTSolver implements Runnable{
 	 * Checks whether the changes from the last time this method was called are consistent. 
 	 * @return true if consistent, false otherwise
 	 */
-	private boolean checkConsistency(Variable v)
+	private boolean checkConsistency()
 	{
 		boolean isConsistent = false;
 		switch(cChecks)
 		{
 		case None: 				isConsistent = assignmentsCheck();
 		break;
-		case ForwardChecking: 	isConsistent = forwardChecking(v);
+		case ForwardChecking: 	isConsistent = forwardChecking();
 		break;
-		case ArcConsistency: 	isConsistent = arcConsistency(v);
+		case ArcConsistency: 	isConsistent = arcConsistency();
 		break;
 		default: 				isConsistent = assignmentsCheck();
 		break;
@@ -203,13 +203,20 @@ public class BTSolver implements Runnable{
 		return true;
 	}
 	
-	private boolean forwardChecking(Variable v)
+	private boolean forwardChecking()
 	{
-		for(Variable vOther : network.getNeighborsOfVariable(v))
+		for(Variable v : network.getVariables())
 		{
-			vOther.removeValueFromDomain(v.getAssignment());
-			if (vOther.getDomain().isEmpty())
-				return false;
+			if(v.isAssigned())
+			{
+				for(Variable vOther : network.getNeighborsOfVariable(v))
+				{
+					if (!vOther.isAssigned())
+						vOther.removeValueFromDomain(v.getAssignment());
+					if (v.getAssignment() == vOther.getAssignment())
+						return false;
+				}
+			}
 		}
 		return true;
 	}
@@ -217,38 +224,33 @@ public class BTSolver implements Runnable{
 	/**
 	 * TODO: Implement Maintaining Arc Consistency.
 	 */
-	private boolean arcConsistency(Variable v)
-	{
-		Queue<Variable> acq = new LinkedList<Variable>();
-		acq.add(v);
-		
-		while (!acq.isEmpty())
-		{
-			Variable n = acq.remove();
-			for(Variable vOther : network.getNeighborsOfVariable(n))
-			{
-				vOther.removeValueFromDomain(n.getAssignment());
-				if (vOther.getDomain().isEmpty())
-					return false;
-				if (vOther.isModified() && vOther.isAssigned())
-				{
-					acq.add(vOther);
-					vOther.setModified(false);
-				}
-			}
-		}
-		return true;
-	}
-	
-	private void arcConsistencyPreprocessor()
+	private boolean arcConsistency()
 	{
 		for(Variable v : network.getVariables())
 		{
 			if(v.isAssigned())
 			{
-				arcConsistency(v);
+				Queue<Variable> acq = new LinkedList<Variable>();
+				acq.add(v);
+				
+				while (!acq.isEmpty())
+				{
+					Variable n = acq.remove();
+					for(Variable vOther : network.getNeighborsOfVariable(n))
+					{
+						if (!vOther.isAssigned())
+						{
+							vOther.removeValueFromDomain(n.getAssignment());
+							if (vOther.isAssigned() && !acq.contains(vOther))
+								acq.add(vOther);
+						}
+						if (n.getAssignment() == vOther.getAssignment())
+							return false;
+					}
+				}
 			}
 		}
+		return true;
 	}
 	
 	/**
@@ -379,8 +381,9 @@ public class BTSolver implements Runnable{
 	{
 		acPreStartTime = System.currentTimeMillis();
 		if (Preprocess == Preprocessing.ACPreprocessing)
-			arcConsistencyPreprocessor();
+			arcConsistency();
 		acPreEndTime = System.currentTimeMillis();
+		
 		startTime = System.currentTimeMillis();
 		try {
 			solve(0);
@@ -442,7 +445,7 @@ public class BTSolver implements Runnable{
 				//check a value
 				v.updateDomain(new Domain(i));
 				numAssignments++;
-				boolean isConsistent = checkConsistency(v);
+				boolean isConsistent = checkConsistency();
 				
 				//move to the next assignment
 				if(isConsistent)

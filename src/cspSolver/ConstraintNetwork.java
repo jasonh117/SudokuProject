@@ -48,15 +48,7 @@ public class ConstraintNetwork {
 			variables.add(v);
 		}
 	}
-	
-	/**
-	 * Used for Local Search. Assigns a value to a variable based on the parameter a
-	 * @param a Assignment to actualize 
-	 */
-	public void pushAssignment(Assignment a) {
-		a.getVariable().assignValue(a.getValue());
-	}
-	
+
 	//===============================================================================
 	// Accessors
 	//===============================================================================

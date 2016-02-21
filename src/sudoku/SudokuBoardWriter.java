@@ -22,7 +22,7 @@ public class SudokuBoardWriter {
 			
 			bw.write("TOTAL_START=0\n");  // all other time is relative to the total start time
 			bw.write("PREPROCESSING_START=" + (solver.getACPreStartTime() - totalStartTime)/1000.0 + "\n");
-			bw.write("PREPROCESSING_DONE=" + (solver.getACPreStartTime() - totalStartTime)/1000.0 + "\n");
+			bw.write("PREPROCESSING_DONE=" + (solver.getACPreEndTime() - totalStartTime)/1000.0 + "\n");
 			bw.write("SEARCH_START=" + (solver.getStartTime() - totalStartTime)/1000.0 + "\n");
 			bw.write("SEARCH_DONE=" + (solver.getEndTime() - totalStartTime)/1000.0 + "\n");
 			bw.write("SOLUTION_TIME=" + solver.getTimeTaken()/1000.0 + "\n");
