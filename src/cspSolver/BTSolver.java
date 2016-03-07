@@ -1,4 +1,5 @@
 package cspSolver;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -31,7 +32,7 @@ public class BTSolver implements Runnable{
 	private long acPreStartTime;
 	private long acPreEndTime;
 	
-	public enum VariableSelectionHeuristic 	{ None, MinimumRemainingValue, Degree };
+	public enum VariableSelectionHeuristic 	{ None, MinimumRemainingValue, Degree, MRVDH };
 	public enum ValueSelectionHeuristic 		{ None, LeastConstrainingValue };
 	public enum ConsistencyCheck				{ None, ForwardChecking, ArcConsistency };
 	public enum Preprocessing				{ None, ACPreprocessing };
@@ -220,10 +221,7 @@ public class BTSolver implements Runnable{
 		}
 		return true;
 	}
-	
-	/**
-	 * TODO: Implement Maintaining Arc Consistency.
-	 */
+
 	private boolean arcConsistency()
 	{
 		for(Variable v : network.getVariables())
@@ -268,6 +266,8 @@ public class BTSolver implements Runnable{
 		break;
 		case Degree:				next = getDegree();
 		break;
+		case MRVDH:					next = getMRVDH();
+		break;
 		default:					next = getfirstUnassignedVariable();
 		break;
 		}
@@ -290,22 +290,94 @@ public class BTSolver implements Runnable{
 		return null;
 	}
 
-	/**
-	 * TODO: Implement MRV heuristic
-	 * @return variable with minimum remaining values that isn't assigned, null if all variables are assigned. 
-	 */
 	private Variable getMRV()
 	{
-		return null;
+		Variable leastRemaining = null;
+		for(Variable v : network.getVariables())
+		{
+			if(!v.isAssigned())
+			{
+				if (leastRemaining == null || v.size() < leastRemaining.size())
+				{
+					leastRemaining = v;
+				}
+			}
+		}
+		return leastRemaining;
 	}
 	
-	/**
-	 * TODO: Implement Degree heuristic
-	 * @return variable constrained by the most unassigned variables, null if all variables are assigned.
-	 */
 	private Variable getDegree()
 	{
-		return null;
+		Variable degreeheuristic = null;
+		int max_neighbors_unassigned = 0;
+		for(Variable v : network.getVariables())
+		{
+			if(!v.isAssigned())
+			{
+				int neighbors_unassigned = 0;
+				for(Variable vOther : network.getNeighborsOfVariable(v))
+				{
+					if(!vOther.isAssigned())
+					{
+						neighbors_unassigned++;
+					}
+				}
+				if (neighbors_unassigned > max_neighbors_unassigned)
+				{
+					max_neighbors_unassigned = neighbors_unassigned;
+					degreeheuristic = v;
+				}
+			}
+		}
+		return degreeheuristic;
+	}
+	
+	private Variable getMRVDH()
+	{
+		List<Variable> leastRemaining = new ArrayList<Variable>();
+		int minimum = -1;
+		for(Variable v : network.getVariables())
+		{
+			if(!v.isAssigned())
+			{
+				if (minimum == -1 || v.size() < minimum)
+				{
+					minimum = v.size();
+					leastRemaining.clear();
+					leastRemaining.add(v);
+				}
+				else if (v.size() == minimum)
+				{
+					leastRemaining.add(v);
+				}
+			}
+		}
+		
+		if (leastRemaining.isEmpty())
+			return null;
+		
+		if (leastRemaining.size() == 1)
+			return leastRemaining.get(0);
+		
+		Variable degreeheuristic = null;
+		int max_neighbors_unassigned = 0;
+		for(Variable v : leastRemaining)
+		{
+			int neighbors_unassigned = 0;
+			for(Variable vOther : network.getNeighborsOfVariable(v))
+			{
+				if(!vOther.isAssigned())
+				{
+					neighbors_unassigned++;
+				}
+			}
+			if (neighbors_unassigned > max_neighbors_unassigned)
+			{
+				max_neighbors_unassigned = neighbors_unassigned;
+				degreeheuristic = v;
+			}
+		}
+		return degreeheuristic;
 	}
 	
 	/**
@@ -348,12 +420,33 @@ public class BTSolver implements Runnable{
 		return values;
 	}
 	
-	/**
-	 * TODO: LCV heuristic
-	 */
-	public List<Integer> getValuesLCVOrder(Variable v)
+	public List<Integer> getValuesLCVOrder(final Variable v)
 	{
-		return null;
+		List<Integer> values = v.getDomain().getValues();
+		
+		Comparator<Integer> valueComparator = new Comparator<Integer>(){
+			
+			@Override
+			public int compare(Integer x, Integer y) {
+				Integer xcount = 0, ycount = 0;
+				
+				for(Variable vOther : network.getNeighborsOfVariable(v)) {
+					if(!vOther.isAssigned()) {
+						for(int each : vOther.Values())
+						{
+							if(each == x)
+								xcount++;
+							if(each == y)
+								ycount++;
+						}
+					}
+				}
+				
+				return xcount.compareTo(ycount);
+			}
+		};
+		Collections.sort(values, valueComparator);
+		return values;
 	}
 	/**
 	 * Called when solver finds a solution

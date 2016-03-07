@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import cspSolver.BTSolver;
 import cspSolver.BTSolver.Preprocessing;
 import cspSolver.BTSolver.ConsistencyCheck;
-//import cspSolver.BTSolver.ValueSelectionHeuristic;
-//import cspSolver.BTSolver.VariableSelectionHeuristic;
+import cspSolver.BTSolver.ValueSelectionHeuristic;
+import cspSolver.BTSolver.VariableSelectionHeuristic;
 import sudoku.SudokuBoardReader;
 import sudoku.SudokuBoardWriter;
 import sudoku.SudokuFile;
@@ -22,6 +22,10 @@ public class SudokuSolverMain {
 		if (tokens.contains("ACP")) solver.setACPreprocessing(Preprocessing.ACPreprocessing);
 		if (tokens.contains("FC")) solver.setConsistencyChecks(ConsistencyCheck.ForwardChecking);
 		if (tokens.contains("MAC")) solver.setConsistencyChecks(ConsistencyCheck.ArcConsistency);
+		if (tokens.contains("MRV")) solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MinimumRemainingValue);
+		if (tokens.contains("DH")) solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.Degree);
+		if (tokens.contains("MRV") && tokens.contains("DH")) solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MRVDH);
+		if (tokens.contains("LCV")) solver.setValueSelectionHeuristic(ValueSelectionHeuristic.LeastConstrainingValue);
 		
 		Thread t1 = new Thread(solver);
 		try
@@ -36,8 +40,6 @@ public class SudokuSolverMain {
 		{
 		}
 
-//		solver.printSolverStats();
-//		System.out.println(solver.getSolution());	
 		SudokuBoardWriter.writeFile(solver, args[1], totalStartTime);
 	}
 	
