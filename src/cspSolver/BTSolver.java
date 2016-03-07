@@ -314,6 +314,9 @@ public class BTSolver implements Runnable{
 		{
 			if(!v.isAssigned())
 			{
+				if (degreeheuristic == null)
+					degreeheuristic = v;
+				
 				int neighbors_unassigned = 0;
 				for(Variable vOther : network.getNeighborsOfVariable(v))
 				{
