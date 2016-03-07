@@ -264,7 +264,7 @@ public class BTSolver implements Runnable{
 		break;
 		case MinimumRemainingValue: next = getMRV();
 		break;
-		case Degree:				next = getDegree();
+		case Degree:				next = getDegree(network.getVariables());
 		break;
 		case MRVDH:					next = getMRVDH();
 		break;
@@ -306,11 +306,11 @@ public class BTSolver implements Runnable{
 		return leastRemaining;
 	}
 	
-	private Variable getDegree()
+	private Variable getDegree(List<Variable> values)
 	{
 		Variable degreeheuristic = null;
 		int max_neighbors_unassigned = 0;
-		for(Variable v : network.getVariables())
+		for(Variable v : values)
 		{
 			if(!v.isAssigned())
 			{
@@ -359,25 +359,7 @@ public class BTSolver implements Runnable{
 		if (leastRemaining.size() == 1)
 			return leastRemaining.get(0);
 		
-		Variable degreeheuristic = null;
-		int max_neighbors_unassigned = 0;
-		for(Variable v : leastRemaining)
-		{
-			int neighbors_unassigned = 0;
-			for(Variable vOther : network.getNeighborsOfVariable(v))
-			{
-				if(!vOther.isAssigned())
-				{
-					neighbors_unassigned++;
-				}
-			}
-			if (neighbors_unassigned > max_neighbors_unassigned)
-			{
-				max_neighbors_unassigned = neighbors_unassigned;
-				degreeheuristic = v;
-			}
-		}
-		return degreeheuristic;
+		return getDegree(leastRemaining);
 	}
 	
 	/**
