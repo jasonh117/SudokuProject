@@ -31,7 +31,7 @@ public class SudokuSolverMain {
 		try
 		{
 			t1.start();
-			t1.join(600000);
+			t1.join();
 			if(t1.isAlive())
 			{
 				t1.interrupt();

@@ -1,4 +1,4 @@
-package main;
+package part3;
 
 import cspSolver.BTSolver;
 import cspSolver.BTSolver.Preprocessing;
@@ -52,7 +52,7 @@ public class GenerateResults {
 		try
 		{
 			t1.start();
-			t1.join(600000);
+			t1.join();
 			if(t1.isAlive())
 			{
 				t1.interrupt();
