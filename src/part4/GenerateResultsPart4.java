@@ -1,4 +1,4 @@
-package part3;
+package part4;
 
 import cspSolver.BTSolver;
 import cspSolver.BTSolver.Preprocessing;
@@ -8,23 +8,28 @@ import cspSolver.BTSolver.VariableSelectionHeuristic;
 import sudoku.SudokuBoardGenerator;
 import sudoku.SudokuFile;
 
-public class GenerateResults {
+public class GenerateResultsPart4 {
 
 	public static void main(String[] args) throws InterruptedException
 	{
-		int[] m = {4,8,12,16,17,18,19,20,21,22,24,28,32,36};
-		for (int i = 0; i < m.length; i++)
+		System.out.println("m    Avergage nodes 	Average time		Std Dev Time		Solvable");
+
+		int[] p = {3,3,4,3,4,3,4,3,4,5,4,5};
+		int[] q = {4,5,4,6,5,7,6,9,7,6,8,7};
+		for (int i = 0; i < p.length; i++)
 		{
+			int n = p[i] * q[i];
+			int m = (int) Math.round(Math.pow(n, 2) * .222);
 			double[] times = new double[10];
 			double[] nodes = new double[10];
 			double[] solvable = new double[10];
 			for (int j = 0; j < 10; j++)
 			{
-				SudokuFile sf = SudokuBoardGenerator.generateBoard(9, 3, 3, m[i]);
+				SudokuFile sf = SudokuBoardGenerator.generateBoard(n, p[i], q[i], m);
 				BTSolver solver = runsolver(sf);
-				times[j] = solver.getTimeTaken()/1000.0;
-				nodes[j] = solver.getNumAssignments();
-				solvable[j] = solver.getStatus() == "success" ? 1 : 0;
+				solvable[j] = solver.getStatus() != "timeout" ? 1 : 0;
+				times[j] = solvable[j] == 1 ? solver.getTimeTaken()/1000.0 : -1 ;
+				nodes[j] = solvable[j] == 1 ? solver.getNumAssignments() : -1;
 				Thread.sleep(1000);
 			}
 			
@@ -32,7 +37,7 @@ public class GenerateResults {
 			Statistics stat2 = new Statistics(times);
 			Statistics stat3 = new Statistics(solvable);
 			
-			System.out.println("Average nodes=" + stat1.getMean()+ "	Average time=" + stat2.getMean() + "	Average STD time=" + stat2.getStdDev() + "	solvable=" + stat3.getMean());
+			System.out.format("%-4d %-10d %22.7f %23.7f %18.2f%n", m, Math.round(stat1.getMean()), stat2.getMean(), stat2.getStdDev(), stat3.getMean());
 		}
 	}
 	
@@ -43,9 +48,9 @@ public class GenerateResults {
 		solver.setACPreprocessing(Preprocessing.ACPreprocessing);
 //		solver.setConsistencyChecks(ConsistencyCheck.ForwardChecking);
 		solver.setConsistencyChecks(ConsistencyCheck.ArcConsistency);
-		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MinimumRemainingValue);
+//		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MinimumRemainingValue);
 //		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.Degree);
-//		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MRVDH);
+		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MRVDH);
 		solver.setValueSelectionHeuristic(ValueSelectionHeuristic.LeastConstrainingValue);
 		
 		Thread t1 = new Thread(solver);

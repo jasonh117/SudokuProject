@@ -10,7 +10,7 @@ import cspSolver.BTSolver.VariableSelectionHeuristic;
 import sudoku.SudokuBoardReader;
 import sudoku.SudokuFile;
 
-public class GenerateResults {
+public class GenerateResultsPart2 {
 
 	public static void main(String[] args) throws InterruptedException
 	{
