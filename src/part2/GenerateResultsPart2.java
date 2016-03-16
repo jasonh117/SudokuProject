@@ -14,7 +14,7 @@ public class GenerateResultsPart2 {
 
 	public static void main(String[] args) throws InterruptedException
 	{
-		System.out.println("Avergage nodes		Average time		Std Dev Time		Tokens");
+		System.out.println("Average nodes		Average time		Std Dev Time		Tokens");
 		String[] filenames = {"ExampleSudokuFiles/PH1.txt", "ExampleSudokuFiles/PH2.txt", "ExampleSudokuFiles/PH3.txt", "ExampleSudokuFiles/PH4.txt", "ExampleSudokuFiles/PH5.txt"};
 		String[] tokens = {"", "FC", "MRV", "DH", "LCV", "ACP", "MAC", "FC MRV DH LCV", "ACP MAC MRV DH LCV"};
 		for (String token: tokens)
