@@ -33,7 +33,7 @@ public class GenerateResultsPart2 {
 			Statistics stat1 = new Statistics(nodes);
 			Statistics stat2 = new Statistics(times);
 			
-			System.out.format("%-10d %22.7f %23.7f \t\t%s", Math.round(stat1.getMean()), stat2.getMean(), stat2.getStdDev(), token);
+			System.out.format("%-10d %22.7f %23.7f \t\t%s%n", Math.round(stat1.getMean()), stat2.getMean(), stat2.getStdDev(), token);
 		}
 	}
 	
