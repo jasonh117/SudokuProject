@@ -43,9 +43,9 @@ public class GenerateResultsPart3 {
 		solver.setACPreprocessing(Preprocessing.ACPreprocessing);
 //		solver.setConsistencyChecks(ConsistencyCheck.ForwardChecking);
 		solver.setConsistencyChecks(ConsistencyCheck.ArcConsistency);
-		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MinimumRemainingValue);
+//		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MinimumRemainingValue);
 //		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.Degree);
-//		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MRVDH);
+		solver.setVariableSelectionHeuristic(VariableSelectionHeuristic.MRVDH);
 		solver.setValueSelectionHeuristic(ValueSelectionHeuristic.LeastConstrainingValue);
 		
 		Thread t1 = new Thread(solver);
